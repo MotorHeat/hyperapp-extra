@@ -9,8 +9,24 @@ This function returns a mapper that can be applied to state or action. This mapp
 Example:
 
 ```JavaScript
+/////////////// Counter component ///////////////
+const IncrementAction = counter => counter + 1
+const DecrementAction = counter => counter - 1
+const ResetAction = counter => 0
+
+const Counter = ({ counter, map }, children) =>
+  h('div', {}, [
+    h('h3', {}, counter),
+    h('button', { onclick: map(IncrementAction) }, '+'),
+    h('button', { onclick: map(DecrementAction) }, '-'),
+    h('button', { onclick: map(ResetAction) }, '0'),
+    ...children
+  ])
+
+
 ...
 
+/////////////// Main View ///////////////
 const initialState = {
   counter1: 10,
   counter2: 21
@@ -34,20 +50,6 @@ const view = state =>
   ])
 ...
 
-/// //////////// Counter component ///////////////
-const IncrementAction = counter => counter + 1
-const DecrementAction = counter => counter - 1
-const ResetAction = counter => 0
-
-const Counter = ({ counter, map }, children) =>
-  h('div', {}, [
-    h('h3', {}, counter),
-    h('button', { onclick: map(IncrementAction) }, '+'),
-    h('button', { onclick: map(DecrementAction) }, '-'),
-    h('button', { onclick: map(ResetAction) }, '0'),
-    ...children
-  ])
-
 ```
 
 Here is the [CodePen](https://codepen.io/MotorHeat/pen/pogNEWq).
@@ -59,9 +61,9 @@ View doesn't know anything (and should not) about app state. The only thing `vie
 If component need to modify the app state then `view` should use action.
 View should map actions from global state to component state.
 
-I propose to achieve this by 2 simple steps:
+We can achieve this by 2 steps:
 1. Each view should have `map` function that is injected via props
-2. View should assign to `vnode` mapped action. I.e. instead of: `onclick: Increment` it should be `onclick: map(Increment)`. Map is a property that is passed via props.
+2. View should assign to `vnode` a mapped action rather then action directly. I.e. instead of: `onclick: Increment` it should be `onclick: map(Increment)`.
 
 The proposed `mnt` function is used to construct a such `map` function.
 If component also embeds other components that follows above paradigm then parent component should pass own `props.map` as a third parameter to `mnt` function
