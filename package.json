@@ -1,0 +1,27 @@
+{
+  "name": "ha-mnt",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "snowpack dev",
+    "build": "snowpack build && esbuild src/index-ha.js --minify --bundle --outfile=build/src/index-ha.js"
+  },
+  "keywords": [],
+  "author": "MotorHeat",
+  "license": "ISC",
+  "dependencies": {
+    "hyperapp": "^2.0.4",
+    "superfine": "^7.0.0"
+  },
+  "devDependencies": {
+    "esbuild": "^0.5.3",
+    "eslint": "^7.2.0",
+    "eslint-config-standard": "^14.1.1",
+    "eslint-plugin-import": "^2.21.2",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-promise": "^4.2.1",
+    "eslint-plugin-standard": "^4.0.1",
+    "snowpack": "^2.5.1"
+  }
+}
