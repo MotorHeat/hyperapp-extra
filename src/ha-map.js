@@ -77,8 +77,12 @@ const mapper = (getter, setter, parentMapper, stateOrAction, ...newValue) =>
 
 const mapState = (parentMapper, getter, setter, state, newValue) =>
   parentMapper
-    ? newValue.length === 0 ? getter(parentMapper(state)) : parentMapper(state, nextState(parentMapper(state), newValue[0], setter))
-    : newValue.length === 0 ? getter(state) : nextState(state, newValue[0], setter)
+    ? newValue.length === 0
+      ? getter(parentMapper(state)) // READ: return mapped state
+      : parentMapper(state, nextState(parentMapper(state), newValue[0], setter)) // WRITE: return new application global state with new value inserted
+    : newValue.length === 0
+      ? getter(state) // READ: return mapped state
+      : nextState(state, newValue[0], setter) // WRITE: return new application global state with new value inserted
 
 const mapAction = (action, map) => (state, options) => map(state, action(map(state), options))
 
