@@ -68,26 +68,22 @@
 //     && pa.every(p => a[p] === b[p])
 // }
 
-export const mnt = (getter, setter, parentMapper) => (stateOrAction, ...newValue) => mapper(getter, setter, parentMapper, stateOrAction, ...newValue)
-
-const mapper = (getter, setter, parentMapper, stateOrAction, ...newValue) =>
-  typeof (stateOrAction) === 'function'
-    ? mapAction(stateOrAction, (state, ...newValue) => mapper(getter, setter, parentMapper, state, ...newValue))
-    : mapState(parentMapper, getter, setter, stateOrAction, newValue)
-
-const mapState = (parentMapper, getter, setter, state, newValue) =>
-  parentMapper
-    ? newValue.length === 0
-      ? getter(parentMapper(state)) // READ: return mapped state
-      : parentMapper(state, nextState(parentMapper(state), newValue[0], setter)) // WRITE: return new application global state with new value inserted
+export const mnt = (getter, setter, parentMapper) => function mapper (globalState, ...newValue) {
+  return typeof (globalState) === 'function'
+    ? mapAction(globalState, mapper)
     : newValue.length === 0
-      ? getter(state) // READ: return mapped state
-      : nextState(state, newValue[0], setter) // WRITE: return new application global state with new value inserted
+      ? parentMapper
+        ? getter(parentMapper(globalState))
+        : getter(globalState)
+      : parentMapper
+        ? parentMapper(globalState, setValue(parentMapper(globalState), newValue[0], setter))
+        : setValue(globalState, newValue[0], setter)
+}
 
 const mapAction = (action, map) => (state, options) => map(state, action(map(state), options))
 
-const nextState = (s, v, setter) => {
-  const newState = Array.isArray(s) ? [...s] : { ...s }
-  setter(newState, v)
+const setValue = (state, value, setter) => {
+  const newState = Array.isArray(state) ? [...state] : { ...state }
+  setter(newState, value)
   return newState
 }
