@@ -68,33 +68,22 @@
 //     && pa.every(p => a[p] === b[p])
 // }
 
-export const mapAction = (action, map) => (state, options) => {
-  return map(state, action(map(state), options))
-}
+export const mapAction = (action, map) => (state, options) => map(state, action(map(state), options))
 
-export function mnt (getter, setter, parentMapper) {
-  if (parentMapper && typeof (parentMapper) !== 'function') throw new Error('Parent mapper must be a function')
-  return function mapper (globalState, newValue) {
-    if (arguments.length !== 1 && arguments.length !== 2) {
-      throw new Error('Wrong number of arguments for mapper')
-    }
+export const mnt = (getter, setter, parentMapper) => (globalStateOrAction, ...newValue) => mapper(getter, setter, parentMapper, globalStateOrAction, ...newValue)
 
-    if (typeof (globalState) === 'function') {
-      // this is the case when we map action and not the state. So return a new action that will get mapped state instead of global one
-      return mapAction(globalState, mapper)
-    }
+const mapper = (getter, setter, parentMapper, globalStateOrAction, ...newValue) =>
+  typeof (globalStateOrAction) === 'function'
+    ? mapAction(globalStateOrAction, (globalState, ...newValue) => mapper(getter, setter, parentMapper, globalState, ...newValue))
+    : newValue.length === 0
+      ? parentMapper // read from upstream state
+        ? getter(parentMapper(globalStateOrAction))
+        : getter(globalStateOrAction)
+      : parentMapper // write to upstream state
+        ? parentMapper(globalStateOrAction, nextState(parentMapper(globalStateOrAction), newValue[0], setter))
+        : nextState(globalStateOrAction, newValue[0], setter)
 
-    if (arguments.length === 1) {
-      return parentMapper ? getter(parentMapper(globalState)) : getter(globalState)
-    } else {
-      return parentMapper
-        ? parentMapper(globalState, nextState(parentMapper(globalState), newValue, setter))
-        : nextState(globalState, newValue, setter)
-    }
-  }
-}
-
-function nextState (s, v, setter) {
+const nextState = (s, v, setter) => {
   const newState = Array.isArray(s) ? [...s] : { ...s }
   setter(newState, v)
   return newState
