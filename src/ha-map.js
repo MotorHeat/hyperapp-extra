@@ -68,20 +68,19 @@
 //     && pa.every(p => a[p] === b[p])
 // }
 
-export const mapAction = (action, map) => (state, options) => map(state, action(map(state), options))
+export const mnt = (getter, setter, parentMapper) => (stateOrAction, ...newValue) => mapper(getter, setter, parentMapper, stateOrAction, ...newValue)
 
-export const mnt = (getter, setter, parentMapper) => (globalStateOrAction, ...newValue) => mapper(getter, setter, parentMapper, globalStateOrAction, ...newValue)
+const mapper = (getter, setter, parentMapper, stateOrAction, ...newValue) =>
+  typeof (stateOrAction) === 'function'
+    ? mapAction(stateOrAction, (state, ...newValue) => mapper(getter, setter, parentMapper, state, ...newValue))
+    : mapState(parentMapper, getter, setter, stateOrAction, newValue)
 
-const mapper = (getter, setter, parentMapper, globalStateOrAction, ...newValue) =>
-  typeof (globalStateOrAction) === 'function'
-    ? mapAction(globalStateOrAction, (globalState, ...newValue) => mapper(getter, setter, parentMapper, globalState, ...newValue))
-    : newValue.length === 0
-      ? parentMapper // read from upstream state
-        ? getter(parentMapper(globalStateOrAction))
-        : getter(globalStateOrAction)
-      : parentMapper // write to upstream state
-        ? parentMapper(globalStateOrAction, nextState(parentMapper(globalStateOrAction), newValue[0], setter))
-        : nextState(globalStateOrAction, newValue[0], setter)
+const mapState = (parentMapper, getter, setter, state, newValue) =>
+  parentMapper
+    ? newValue.length === 0 ? getter(parentMapper(state)) : parentMapper(state, nextState(parentMapper(state), newValue[0], setter))
+    : newValue.length === 0 ? getter(state) : nextState(state, newValue[0], setter)
+
+const mapAction = (action, map) => (state, options) => map(state, action(map(state), options))
 
 const nextState = (s, v, setter) => {
   const newState = Array.isArray(s) ? [...s] : { ...s }
