@@ -5,7 +5,7 @@ type Mapper<X,Y> = ( (s: X) => Y )
   & ( (action: Action<X>) => Action<Y> );
 
 type Getter<S,U> = (s: S) => U
-type Setter<S,U> = (s: S, v: U) => S
+type Setter<S,U> = (s: S, v: U) => void
 type Mount<S,U,G> = ( (get: Getter<S,U>, set: Setter<S,U>, parent: Mapper<G,S>) => Mapper<G,U> )
                   | ( (get: Getter<G,U>, set: Setter<G,U>                     ) => Mapper<G,U> )
 
