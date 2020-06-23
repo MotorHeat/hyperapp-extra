@@ -36,6 +36,7 @@ const WithMap = (view, getter, setter, parentMap) => {
 const ToggleEditing = state => ({ ...state, editing: !state.editing })
 
 const CounterWithTitle = (state, map) => {
+  // eslint-disable-next-line no-unused-vars
   const { title, counter, editing } = state
 
   return h('div', {}, [

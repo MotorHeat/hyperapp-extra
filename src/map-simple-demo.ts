@@ -1,5 +1,5 @@
 import { h, app } from 'hyperapp'
-import { mnt } from './ha-map'
+import { mnt, Mapper, Getter, Setter } from './ha-map'
 
 interface VNode {
   name: string
@@ -57,7 +57,7 @@ function WithMap<S, U> (view: ComponentView<U>, getter: Getter<S, U>, setter: Se
   return (state: S, children) => view(getter(state), map, children)
 }
 
-function Map<S, U> (view: ComponentView<U>, getter: Getter<S, U>, setter: Setter<S, U>, parentMap?: Mapper<any, S>, state: S, children?: any) {
+function Map<S, U> (view: ComponentView<U>, getter: Getter<S, U>, setter: Setter<S, U>, state: S, parentMap?: Mapper<any, S>, children?: any) {
   return h(WithMap(view, getter, setter, parentMap), state, children)
 }
 
@@ -97,8 +97,8 @@ type AppState = typeof initialState
 const mainView = state =>
   h('div', {}, [
     h(WithMap<AppState, CounterState>(Counter, s => ({ counter: s.counter }), (s, v) => s.counter = v.counter), state),
-    Map<AppState, CounterState>(Counter, s => ({ counter: s.counter }), (s, v) => s.counter = v.counter)(state),
-    Map(Counter, s => ({ counter: s.counter }), (s, v) => s.counter = v.counter, state),
+    Map<AppState, CounterState>(Counter, s => ({ counter: s.counter }), (s, v) => s.counter = v.counter, state),
+    // Map(Counter, s => ({ counter: s.counter }), (s, v) => s.counter = v.counter, state),
     h(WithMap<AppState, CounterWithTitleState>(CounterWithTitle, s => s.counterWithTitle, (s, v) => s.counterWithTitle = v), state)
   ])
 

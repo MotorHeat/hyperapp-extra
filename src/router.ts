@@ -1,4 +1,5 @@
 import { h } from 'hyperapp'
+import { Mapper } from './ha-map';
 type RouteView<T> = (state: T, match: RouteMatch, path: Path<T>) => any;
 type NotFoundRouteView = (state: any, location: string) => any
 

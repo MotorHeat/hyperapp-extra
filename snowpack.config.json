@@ -1,0 +1,13 @@
+{
+  "scripts": {
+    "mount:src": "mount src --to /src",
+    "mount:public": "mount public --to /",
+    "build:ts": "esbuild --loader=ts --sourcemap=inline --sourcefile=$FILE",
+    "build:js": "esbuild --loader=js --sourcemap=inline --sourcefile=$FILE",
+    "build:tsx": "esbuild --loader=tsx --sourcemap=inline --sourcefile=$FILE",
+    "build:jsx": "esbuild --loader=jsx --sourcemap=inline --sourcefile=$FILE",
+    "run:tsc": "tsc --noEmit",
+    "run:tsc::watch": "$1 --watch"    
+  },
+  "plugins": ["@snowpack/plugin-webpack"]
+}

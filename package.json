@@ -5,7 +5,9 @@
   "main": "index.js",
   "scripts": {
     "start": "snowpack dev",
-    "build": "snowpack build && esbuild src/index-ha.js --minify --bundle --outfile=build/src/index-ha.js"
+    "build": "snowpack build",
+    "lint": "tsc --noEmit ./src/map-simple-demo.ts",
+    "lint-w": "tsc --noEmit --watch ./src/map-simple-demo.ts"
   },
   "keywords": [],
   "author": "MotorHeat",
@@ -15,6 +17,7 @@
     "superfine": "^7.0.0"
   },
   "devDependencies": {
+    "@snowpack/plugin-webpack": "^1.3.0",
     "esbuild": "^0.5.3",
     "eslint": "^7.2.0",
     "eslint-config-standard": "^14.1.1",

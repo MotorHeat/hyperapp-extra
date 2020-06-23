@@ -12,6 +12,7 @@ module.exports = {
   },
   rules: {
     'no-return-assign': 0,
-    'operator-linebreak': ['error', 'before']
+    'operator-linebreak': ['error', 'before'],
+    'no-unused-vars': 1
   }
 }
