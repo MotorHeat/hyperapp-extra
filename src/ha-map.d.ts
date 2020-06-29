@@ -17,3 +17,7 @@ export type Mount<S,U,G> = ( (get: Getter<S,U>, set: Setter<S,U>, parent: Mapper
 export declare function mnt<S,U,G> (get: Getter<S,U>, set: Setter<S,U>, parent: Mapper<G,S>): Mapper<G,U>;
 export declare function mnt<U,G> (get: Getter<G,U>, set: Setter<G,U>): Mapper<G,U>;
 
+interface MapperMetadata {
+  getter: Getter<any, any>
+  setter: Setter<any, any>
+}

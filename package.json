@@ -14,6 +14,7 @@
   "license": "ISC",
   "dependencies": {
     "hyperapp": "^2.0.4",
+    "hyperapp-fx": "^2.0.0-beta.1",
     "superfine": "^7.0.0"
   },
   "devDependencies": {

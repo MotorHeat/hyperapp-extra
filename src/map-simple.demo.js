@@ -1,19 +1,7 @@
-import { h, app, MapSymbol } from './hyperapp'
+import { Delay, Dispatch } from 'hyperapp-fx'
+import { h, app, Map, MapState } from './hyperapp'
 import { mnt } from './ha-map'
-
-/// //////////// Counter component ///////////////
-const IncrementAction = ({ counter }) => ({ counter: counter + 1 })
-const DecrementAction = ({ counter }) => ({ counter: counter - 1 })
-const ResetAction = ({ counter }) => ({ counter: 0 })
-
-const Counter = ({ counter }, map, children) =>
-  h('div', {}, [
-    h('h3', {}, counter),
-    h('button', { onclick: map(IncrementAction) }, '+'),
-    h('button', { onclick: map(DecrementAction) }, '-'),
-    h('button', { onclick: map(ResetAction) }, '0'),
-    ...children
-  ])
+import { Counter } from './components/counter'
 
 /// //////////// Custom edit box. Can edit any string value ///////////////
 // model: string
@@ -49,12 +37,18 @@ const CounterWithTitle = (state, map) => {
 
 const initialState = {
   mainCounter: 0,
+  counter: 101,
   counter2: 21,
-  counter3: 12,
+  counter3: 0,
   counterWithTitle: {
     title: 'Hello Hyperapp!',
     counter: 21
   }
+}
+
+const IncCounter3 = state => {
+  console.log(state)
+  return ({ ...state, counter3: state.counter3 + 1 })
 }
 
 const mainView = state =>
@@ -63,35 +57,56 @@ const mainView = state =>
     h(WithMap(CounterWithTitle, s => s.counterWithTitle, (s, v) => s.counterWithTitle = v), state)
   ])
 
-function Map (getter, setter, view, props, children) {
-  const map = mnt(getter, setter, props[MapSymbol])
-  const attr = { ...props }
-  attr[MapSymbol] = map
-  return h(view, attr, children)
-}
-
 const IncAction = state => ({ ...state, counter: state.counter + 1 })
 const DecAction = state => ({ ...state, counter: state.counter - 1 })
-
+const DelayedInc = state => [
+  state,
+  Delay({
+    wait: 1000,
+    action: IncAction
+  })
+]
 const Cnt = ({ counter }, children) =>
   h('div', {}, [
     h('h3', {}, counter),
     h('button', { onclick: IncAction }, '+'),
     h('button', { onclick: DecAction }, '-'),
+    h('button', { onclick: DelayedInc }, '+ (delayed)'),
     ...children
   ])
 
+const MappedCnt = Map(Cnt, s => ({ counter: s.mainCounter }), (s, v) => s.mainCounter = v.counter)
+
 const mainView2 = state =>
   h('div', {}, [
-    Map(s => s.mainCounter, (s, v) => s.mainCounter = v, Cnt, { counter: state.mainCounter })
     // h(Cnt, { counter: state.counter })
-    // Map(CounterWithTitleGetter, (s, v) => s.counterWithTitle = v, CounterWi)
-    // h(CounterWithTitle,
-    //   {
-    //     ...CounterWithTitleGetter(state),
-    //     map: mnt(CounterWithTitleGetter, (s, v) => s.counterWithTitle = v)
-    //   }
-    // )
+    // h(MappedCnt, { counter: state.mainCounter }),
+    h('p', {}, `Counter3: ${state.counter3}`),
+    MapState(s => ({ counter: s.counter2 }), (s, v) => {
+      if (s.counter2 === v.counter) return
+      s.counter2 = v.counter
+      return [
+        s,
+        Dispatch(IncCounter3)
+      ]
+    }, [
+      h('h1', {}, 'MapState'),
+      h(Cnt, { counter: state.counter2 })
+    ]),
+    h(Map(Cnt, s => ({ counter: s.counter2 }), (s, v) => {
+      if (s.counter2 === v.counter) return
+      s.counter2 = v.counter
+      return [
+        s,
+        Delay({
+          wait: 1,
+          action: IncCounter3
+        })
+      ]
+    }), { counter: state.counter2 }),
+    h(Map(Cnt, s => ({ counter: s.counter3 }), (s, v) => s.counter3 = v.counter), { counter: state.counter3 })
+    // h('h2', {}, `Total: ${state.mainCounter + state.counter2 + state.counter3}`)
+
   ])
 
 app(

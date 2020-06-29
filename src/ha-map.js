@@ -91,8 +91,8 @@ const setValue = (state, value, setter) => {
     return result
   } else {
     const newState = Array.isArray(state) ? [...state] : { ...state }
-    setter(newState, value)
-    return newState
+    const withEffects = setter(newState, value)
+    return Array.isArray(withEffects) ? withEffects : newState
   }
 }
 
