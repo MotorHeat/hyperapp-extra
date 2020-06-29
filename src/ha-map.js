@@ -83,7 +83,25 @@ export const mnt = (getter, setter, parentMapper) => function mapper (globalStat
 const mapAction = (action, map) => (state, options) => map(state, action(map(state), options))
 
 const setValue = (state, value, setter) => {
-  const newState = Array.isArray(state) ? [...state] : { ...state }
-  setter(newState, value)
-  return newState
+  if (isStateWithEffects(value)) {
+    const newState = Array.isArray(state) ? [...state] : { ...state }
+    setter(newState, value[0])
+    const result = [...value]
+    result[0] = newState
+    return result
+  } else {
+    const newState = Array.isArray(state) ? [...state] : { ...state }
+    setter(newState, value)
+    return newState
+  }
+}
+
+const isStateWithEffects = state => {
+  if (!Array.isArray(state)) return false
+  if (state.length < 2) return false
+  if (typeof (state[0]) !== 'object') return false
+  if (!Array.isArray(state[1])) return false
+  if (state[1].length !== 2) return false
+  if (typeof (state[1][0]) !== 'function') return false
+  return true
 }

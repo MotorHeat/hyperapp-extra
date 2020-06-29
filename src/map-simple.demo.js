@@ -1,4 +1,4 @@
-import { h, app } from 'hyperapp'
+import { h, app, MapSymbol } from './hyperapp'
 import { mnt } from './ha-map'
 
 /// //////////// Counter component ///////////////
@@ -48,7 +48,7 @@ const CounterWithTitle = (state, map) => {
 // Main view
 
 const initialState = {
-  counter: 0,
+  mainCounter: 0,
   counter2: 21,
   counter3: 12,
   counterWithTitle: {
@@ -63,10 +63,41 @@ const mainView = state =>
     h(WithMap(CounterWithTitle, s => s.counterWithTitle, (s, v) => s.counterWithTitle = v), state)
   ])
 
+function Map (getter, setter, view, props, children) {
+  const map = mnt(getter, setter, props[MapSymbol])
+  const attr = { ...props }
+  attr[MapSymbol] = map
+  return h(view, attr, children)
+}
+
+const IncAction = state => ({ ...state, counter: state.counter + 1 })
+const DecAction = state => ({ ...state, counter: state.counter - 1 })
+
+const Cnt = ({ counter }, children) =>
+  h('div', {}, [
+    h('h3', {}, counter),
+    h('button', { onclick: IncAction }, '+'),
+    h('button', { onclick: DecAction }, '-'),
+    ...children
+  ])
+
+const mainView2 = state =>
+  h('div', {}, [
+    Map(s => s.mainCounter, (s, v) => s.mainCounter = v, Cnt, { counter: state.mainCounter })
+    // h(Cnt, { counter: state.counter })
+    // Map(CounterWithTitleGetter, (s, v) => s.counterWithTitle = v, CounterWi)
+    // h(CounterWithTitle,
+    //   {
+    //     ...CounterWithTitleGetter(state),
+    //     map: mnt(CounterWithTitleGetter, (s, v) => s.counterWithTitle = v)
+    //   }
+    // )
+  ])
+
 app(
   {
     init: initialState,
     node: document.getElementById('app'),
-    view: mainView
+    view: mainView2
   }
 )
