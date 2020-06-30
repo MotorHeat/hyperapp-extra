@@ -36,6 +36,7 @@ const CounterWithTitle = (state, map) => {
 // Main view
 
 const initialState = {
+  counter3Direction: 1,
   mainCounter: 0,
   counter: 101,
   counter2: 21,
@@ -64,6 +65,13 @@ const mainView = state =>
 
 const IncAction = state => ({ ...state, counter: state.counter + 1 })
 const DecAction = state => ({ ...state, counter: state.counter - 1 })
+const IncDecAction = state => [
+  IncAction(state),
+  Delay(({
+    wait: 500,
+    action: DecAction
+  }))
+]
 const DelayedInc = state => [
   state,
   Delay({
@@ -77,8 +85,26 @@ const Cnt = ({ counter }, children) =>
     h('button', { onclick: IncAction }, '+'),
     h('button', { onclick: DecAction }, '-'),
     h('button', { onclick: DelayedInc }, '+ (delayed)'),
+    h('button', { onclick: IncDecAction }, '+-'),
     ...children
   ])
+
+function NotMoreThan50 (state) {
+  return {
+    ...state,
+    counter: state.counter > 50 ? 50 : state.counter
+  }
+}
+
+function CntSubscriptions (state) {
+  return [
+    intervalRun,
+    {
+      interval: 10,
+      action: NotMoreThan50
+    }
+  ]
+}
 
 const MappedCnt = Map(Cnt, s => ({ counter: s.mainCounter }), (s, v) => s.mainCounter = v.counter)
 
@@ -114,19 +140,68 @@ const mainView2 = state =>
 
   ])
 
-function foreverRun (dispatch, options) {
+const mainComponentView = state =>
+  h('div', {}, [
+    // h(Cnt, { counter: state.counter })
+    // h(MappedCnt, { counter: state.mainCounter }),
+    h('p', {}, `Counter3: ${state.counter3}`),
+    MapState(s => ({ counter: s.counter2 }), (s, v) => {
+      if (s.counter2 === v.counter) return
+      s.counter2 = v.counter
+      return [
+        s,
+        Dispatch(IncCounter3)
+      ]
+    }, [
+      h('h1', {}, 'MapState'),
+      h(Cnt, { counter: state.counter2 })
+    ]),
+    h(Map(Cnt, s => ({ counter: s.counter2 }), (s, v) => {
+      if (s.counter2 === v.counter) return
+      s.counter2 = v.counter
+      return [
+        s,
+        Delay({
+          wait: 1,
+          action: IncCounter3
+        })
+      ]
+    }), { counter: state.counter2 }),
+    h(Map(Cnt, s => ({ counter: s.counter3 }), (s, v) => s.counter3 = v.counter), { counter: state.counter3 })
+    // h('h2', {}, `Total: ${state.mainCounter + state.counter2 + state.counter3}`)
+
+  ])
+
+function mainComponentSubscriptions (state) {
+  // var map = mnt(s => s.counter3, (s, v) => s.counter3 = v)
+  // var cntSubs = CntSubscriptions(map(state))
+  return [
+    // state.counter3Direction > 0 && [intervalRun, { action: IncCounter3, interval: 100 }],
+    // state.counter3Direction < 0 && [intervalRun, { action: DecCounter3, interval: 100 }],
+    // [intervalRun,
+    //   {
+    //     action: adjustCounterDirection,
+    //     interval: 100
+    //   }
+    // ],
+    ...CntSubscriptions(state)
+  ]
+}
+
+function intervalRun (dispatch, options) {
   const i = setInterval(() => dispatch(options.action), options.interval)
   return () => clearInterval(i)
+}
+
+function adjustCounterDirection (state) {
+  return ({ ...state, counter3Direction: state.counter3 > 100 ? -1 : state.counter3 < -100 ? +1 : state.counter3Direction })
 }
 
 app(
   {
     init: initialState,
     node: document.getElementById('app'),
-    view: mainView2,
-    subscriptions: state => [
-      [foreverRun, { action: IncCounter3, interval: 200 }],
-      [foreverRun, { action: DecCounter3, interval: 210 }]
-    ]
+    view: mainComponentView,
+    subscriptions: mainComponentSubscriptions
   }
 )
