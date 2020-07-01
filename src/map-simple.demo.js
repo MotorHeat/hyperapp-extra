@@ -1,7 +1,8 @@
 import { Delay, Dispatch } from 'hyperapp-fx'
-import { h, app, Map, MapState } from './hyperapp'
+import { h, app, Map, mapper, rootMapper } from './hyperapp'
 import { mnt } from './ha-map'
 import { Counter } from './components/counter'
+import { CounterSubs } from './components/cnt'
 
 /// //////////// Custom edit box. Can edit any string value ///////////////
 // model: string
@@ -75,44 +76,51 @@ const Cnt = ({ counter }, children) =>
     ...children
   ])
 
-const MappedCnt = Map(Cnt, s => ({ counter: s.mainCounter }), (s, v) => s.mainCounter = v.counter)
+const MainCounter = Map(Cnt, s => ({ counter: s.mainCounter }), (s, v) => s.mainCounter = v.counter)
+
+const counter3mapper = mapper(s => ({ counter: s.counter3 }), (s, v) => s.counter3 = v.counter)
+const counter2mapper = mapper(
+  s => ({ counter: s.counter2 }),
+  (s, v) => {
+    if (s.counter2 === v.counter) return
+    s.counter2 = v.counter
+    return [
+      s,
+      // Delay({
+      //   wait: 1,
+      //   action: IncCounter3
+      // })
+      Dispatch(IncCounter3)
+    ]
+  }
+)
+
+const Counter3 = Map(Cnt, counter3mapper)
+const Counter2 = Map(Cnt, counter2mapper)
 
 const mainView2 = state =>
   h('div', {}, [
-    // h(Cnt, { counter: state.counter })
-    // h(MappedCnt, { counter: state.mainCounter }),
     h('p', {}, `Counter3: ${state.counter3}`),
-    MapState(s => ({ counter: s.counter2 }), (s, v) => {
-      if (s.counter2 === v.counter) return
-      s.counter2 = v.counter
-      return [
-        s,
-        Dispatch(IncCounter3)
-      ]
-    }, [
-      h('h1', {}, 'MapState'),
-      h(Cnt, { counter: state.counter2 })
+    h(Counter2, { counter: state.counter2 }),
+    h(Counter3, Counter3.getter(state), [
+      h('h2', {}, 'Counter 3 children. Dispaly counter 2'),
+      h(Map(Cnt, rootMapper(s => ({ counter: s.counter2 }), (s, v) => s.counter2 = v.counter)), { counter: state.counter2 })
     ]),
-    h(Map(Cnt, s => ({ counter: s.counter2 }), (s, v) => {
-      if (s.counter2 === v.counter) return
-      s.counter2 = v.counter
-      return [
-        s,
-        Delay({
-          wait: 1,
-          action: IncCounter3
-        })
-      ]
-    }), { counter: state.counter2 }),
-    h(Map(Cnt, s => ({ counter: s.counter3 }), (s, v) => s.counter3 = v.counter), { counter: state.counter3 })
-    // h('h2', {}, `Total: ${state.mainCounter + state.counter2 + state.counter3}`)
-
+    h('h2', {}, `Total: ${state.mainCounter + state.counter2 + state.counter3}`)
   ])
+
+function mainSubscriptions (state, m) {
+  return [
+    // CounterSubs(state, m.concat([mapper(s => ({ counter: s.counter2 }), (s, v) => s.counter2 = v.counter)])),
+    // CounterSubs(state, m.concat([counter3mapper]))
+  ]
+}
 
 app(
   {
     init: initialState,
     node: document.getElementById('app'),
-    view: mainView2
+    view: mainView2,
+    subscriptions: mainSubscriptions
   }
 )

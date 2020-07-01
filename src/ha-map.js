@@ -96,12 +96,8 @@ const setValue = (state, value, setter) => {
   }
 }
 
-const isStateWithEffects = state => {
-  if (!Array.isArray(state)) return false
-  if (state.length < 2) return false
-  if (typeof (state[0]) !== 'object') return false
-  if (!Array.isArray(state[1])) return false
-  if (state[1].length !== 2) return false
-  if (typeof (state[1][0]) !== 'function') return false
-  return true
+function isStateWithEffects (s) {
+  return Array.isArray(s)
+    && typeof (s[0]) !== 'function'
+    && !Array.isArray(s[0])
 }
