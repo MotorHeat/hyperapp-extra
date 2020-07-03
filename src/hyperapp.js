@@ -508,12 +508,16 @@ export var app = function(props) {
 }
 
 // function Map (view: func, mapper: obj)
+// function Map (view: func, mapper: obj, unmap: boolean)
 // function Map (view: func, getter: func, setter: func)
-// function Map (view: func, getter: func, setter: func, root: boolean)
+// function Map (view: func, getter: func, setter: func, unmap: boolean)
 export function Map (view) {
   var mapper = typeof arguments[1] === 'function'
-    ? { getter: arguments[1], setter: arguments[2], root: !!arguments[3] }
-    : arguments[1]
+    ? { getter: arguments[1], setter: arguments[2], unmap: !!arguments[3] }
+    : typeof (arguments[2]) !== 'undefined'
+      ? { ...arguments[1], unmap: arguments[2] }
+      : arguments[1]
+
   var result = function (props, children) {
     const r = h(view, props, children)
     r.props.__map = mapper
@@ -525,20 +529,18 @@ export function Map (view) {
 }
 
 export function mapper (getter, setter) {
-  return { getter, setter, root: false }
-}
-
-function rootGetter (s) { return s }
-function rootSetter (_, v) { return v }
-export function rootMapper (getter, setter) {
-  return { getter: getter || rootGetter, setter: setter || rootSetter, root: true }
+  return { getter, setter, unmap: false }
 }
 
 function getMappers (node, result) {
   if (!result) return getMappers(node, [])
   if (node.__map) {
-    result.push({ ...node.__map })
-    if (node.__map.root) return result
+    if (node.__map.getter && node.__map.setter) {
+      result.push({ ...node.__map })
+    }
+    if (node.__map.unmap) {
+      return getMappers(node.parentNode.parentNode, result)
+    }
   }
   if (node.parentNode) getMappers(node.parentNode, result)
   return result

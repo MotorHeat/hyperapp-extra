@@ -1,4 +1,4 @@
-import { h, app } from 'hyperapp'
+import { h, app } from './hyperapp'
 import { RouteLink, RouterView, routerLocationSubscription, initialRouterState, updateRouterStateEffect } from './router'
 import { mnt } from './ha-map'
 

@@ -1,5 +1,5 @@
 import { Delay, Dispatch } from 'hyperapp-fx'
-import { h, app, Map, mapper, rootMapper } from './hyperapp'
+import { h, app, Map, mapper } from './hyperapp'
 import { mnt } from './ha-map'
 import { Counter } from './components/counter'
 import { CounterSubs } from './components/cnt'
@@ -103,8 +103,11 @@ const mainView2 = state =>
     h('p', {}, `Counter3: ${state.counter3}`),
     h(Counter2, { counter: state.counter2 }),
     h(Counter3, Counter3.getter(state), [
-      h('h2', {}, 'Counter 3 children. Dispaly counter 2'),
-      h(Map(Cnt, rootMapper(s => ({ counter: s.counter2 }), (s, v) => s.counter2 = v.counter)), { counter: state.counter2 })
+      h('h2', {}, 'Counter 2 children. Dispaly counter 2'),
+      h(Map(Cnt,
+        mapper(s => ({ counter: s.counter2 }), (s, v) => s.counter2 = v.counter),
+        true),
+      { counter: state.counter2 })
     ]),
     h('h2', {}, `Total: ${state.mainCounter + state.counter2 + state.counter3}`)
   ])

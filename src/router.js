@@ -32,7 +32,7 @@ const setLocationAction = (state, location) => {
   } else {
     const c = (exact || matched[0])
 
-    if (c.to) {
+    if (c.route.to) {
       result.current = {
         match: {
           exact: c.match.exact,
